@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function ContactForm() {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [contacts, setContacts] = useState([]);
+    const [contacts, setContacts] = useState(() => {
+        const savedContacts = localStorage.getItem("contacts");
+        if (!savedContacts) {
+            return [];
+        }
+        try {
+            return JSON.parse(savedContacts);
+        } catch (error) {
+            console.error("Error loading contacts:", error);
+            return [];
+        }
+    });
+    useEffect(() => {
+        localStorage.setItem("contacts", JSON.stringify(contacts));
+    }, [contacts]);
+
     function handleSubmit(e) {
         e.preventDefault();
         const newContact = {
+            id: crypto.randomUUID(),
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -49,8 +65,8 @@ function ContactForm() {
                 </form>
 
                 <div className="contact-list">
-                    {contacts.map((contact, index) => (
-                        <div className="contact" key={index}>
+                    {contacts.map((contact) => (
+                        <div className="contact" key={contact.id}>
                             <h3>
                                 {contact.firstName} {contact.lastName}
                             </h3>
